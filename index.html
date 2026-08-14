@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Чек-лист перед защитой бюджета</title>
 
+<!-- Библиотека для экспорта в PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
 <style>
   :root {
     --teal: #2f7f82;
@@ -33,7 +36,8 @@
     background: var(--paper);
     border: 1px solid #e5ded4;
     color: var(--text);
-    overflow: hidden;
+    overflow-y: auto;               /* прокрутка при переполнении */
+    overflow-x: hidden;
   }
 
   .top-label {
@@ -42,7 +46,7 @@
     margin-bottom: 12px;
     background: var(--teal);
     color: #ffffff;
-    font-family: Georgia, "Times New Roman", serif;
+    font-family: Arial, sans-serif; /* без засечек */
     font-size: 22px;
     font-weight: 700;
     line-height: 1;
@@ -50,7 +54,7 @@
 
   h1 {
     margin: 0 0 7px;
-    font-family: Georgia, "Times New Roman", serif;
+    font-family: Arial, sans-serif; /* без засечек */
     font-size: 23px;
     line-height: 1.05;
     color: var(--black);
@@ -63,6 +67,7 @@
     font-size: 14px;
     line-height: 1.35;
     color: #333333;
+    font-family: Arial, sans-serif;
   }
 
   .progress-row {
@@ -77,6 +82,7 @@
     font-size: 13px;
     font-weight: 700;
     color: var(--teal-dark);
+    font-family: Arial, sans-serif;
   }
 
   .progress-bar {
@@ -130,8 +136,9 @@
   }
 
   .check-text {
-    font-size: 12.6px;
+    font-size: 15px;                 /* увеличено с 12.6px на ~15% */
     line-height: 1.22;
+    font-family: Arial, sans-serif;
   }
 
   .check-item.checked {
@@ -157,6 +164,7 @@
     font-weight: 700;
     cursor: pointer;
     transition: 0.2s ease;
+    font-family: Arial, sans-serif;
   }
 
   .download-btn {
@@ -184,6 +192,7 @@
     font-size: 12.5px;
     color: var(--muted);
     text-align: right;
+    font-family: Arial, sans-serif;
   }
 
   @media print {
@@ -203,6 +212,7 @@
       width: 100%;
       height: auto;
       border: none;
+      overflow: visible;
     }
 
     .buttons {
@@ -220,8 +230,7 @@
   <h1>Что проверить перед защитой бюджета</h1>
 
   <p class="intro">
-    Отметьте проверки, которые уже сделали в бюджетной модели. Прогресс покажет,
-    насколько бюджет готов к защите перед бюджетным комитетом.
+    Отметьте, что вы уже проверили в бюджетной модели
   </p>
 
   <div class="progress-row">
@@ -279,8 +288,8 @@
   </div>
 
   <div class="buttons">
-    <button class="download-btn" onclick="downloadChecklist()">
-      Скачать чек-лист для бюджетного комитета
+    <button class="download-btn" onclick="savePdf()">
+      Сохранить в PDF
     </button>
 
     <button class="print-btn" onclick="window.print()">
@@ -324,25 +333,50 @@
     box.addEventListener('change', updateProgress);
   });
 
-  function downloadChecklist() {
-    const total = checkboxes.length;
-    const checked = document.querySelectorAll('.check-item input:checked').length;
+  async function savePdf() {
+    const element = document.getElementById('budgetChecklist');
+    const buttons = element.querySelector('.buttons');
 
-    let text = 'Чек-лист для бюджетного комитета: что проверить перед защитой бюджета-2027\n\n';
-    text += 'Готово: ' + checked + ' из ' + total + '\n\n';
+    if (typeof html2pdf === 'undefined') {
+      alert('Не удалось загрузить библиотеку для PDF. Проверьте интернет-соединение.');
+      return;
+    }
 
-    checkboxes.forEach(function(box) {
-      text += (box.checked ? '✓ ' : '— ') + box.value + '\n';
-    });
+    const originalHeight = element.style.height;
+    const originalOverflow = element.style.overflow;
+    const originalButtonsDisplay = buttons.style.display;
 
-    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-    const link = document.createElement('a');
+    buttons.style.display = 'none';
+    element.style.height = 'auto';
+    element.style.overflow = 'visible';
 
-    link.href = URL.createObjectURL(blob);
-    link.download = 'checklist_budget_2027.txt';
-    link.click();
+    const options = {
+      margin: 0,
+      filename: 'checklist_budget_2027.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      },
+      jsPDF: {
+        unit: 'mm',
+        format: 'a4',
+        orientation: 'portrait'
+      },
+      exclude: ['.buttons']
+    };
 
-    URL.revokeObjectURL(link.href);
+    try {
+      await html2pdf().set(options).from(element).save();
+    } catch (error) {
+      console.error(error);
+      alert('Не удалось сохранить PDF.');
+    } finally {
+      buttons.style.display = originalButtonsDisplay;
+      element.style.height = originalHeight;
+      element.style.overflow = originalOverflow;
+    }
   }
 
   updateProgress();
