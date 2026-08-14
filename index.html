@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Чек-лист перед защитой бюджета</title>
+
+<style>
+  :root {
+    --teal: #2f7f82;
+    --teal-dark: #1f6265;
+    --black: #080808;
+    --paper: #ffffff;
+    --cream-dark: #ede6dc;
+    --text: #202020;
+    --muted: #6b6b6b;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: #ffffff;
+    font-family: Arial, sans-serif;
+  }
+
+  .budget-widget {
+    width: 757px;
+    height: 430px;
+    padding: 20px 24px;
+    background: var(--paper);
+    border: 1px solid #e5ded4;
+    color: var(--text);
+    overflow: hidden;
+  }
+
+  .top-label {
+    display: inline-block;
+    padding: 8px 18px 9px;
+    margin-bottom: 12px;
+    background: var(--teal);
+    color: #ffffff;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  h1 {
+    margin: 0 0 7px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 23px;
+    line-height: 1.05;
+    color: var(--black);
+    letter-spacing: -0.4px;
+  }
+
+  .intro {
+    margin: 0 0 11px;
+    max-width: 690px;
+    font-size: 14px;
+    line-height: 1.35;
+    color: #333333;
+  }
+
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .progress-text {
+    width: 112px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--teal-dark);
+  }
+
+  .progress-bar {
+    flex: 1;
+    height: 10px;
+    background: var(--cream-dark);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    width: 0%;
+    height: 100%;
+    background: var(--teal);
+    border-radius: 20px;
+    transition: width 0.25s ease;
+  }
+
+  .checklist {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px 10px;
+    margin-bottom: 13px;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    min-height: 52px;
+    padding: 8px 9px;
+    background: #fbfaf7;
+    border: 1px solid #ded7cd;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s ease;
+  }
+
+  .check-item:hover {
+    background: #f2fafa;
+    border-color: var(--teal);
+  }
+
+  .check-item input {
+    width: 16px;
+    height: 16px;
+    margin-top: 1px;
+    accent-color: var(--teal);
+    cursor: pointer;
+    flex: 0 0 auto;
+  }
+
+  .check-text {
+    font-size: 12.6px;
+    line-height: 1.22;
+  }
+
+  .check-item.checked {
+    background: #eaf6f6;
+    border-color: var(--teal);
+  }
+
+  .check-item.checked .check-text {
+    color: var(--teal-dark);
+    font-weight: 700;
+  }
+
+  .buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  button {
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+  }
+
+  .download-btn {
+    border: 1px solid var(--teal);
+    background: var(--teal);
+    color: #ffffff;
+  }
+
+  .download-btn:hover {
+    background: var(--teal-dark);
+  }
+
+  .print-btn {
+    border: 1px solid var(--teal);
+    background: #ffffff;
+    color: var(--teal-dark);
+  }
+
+  .print-btn:hover {
+    background: #f2fafa;
+  }
+
+  .result-note {
+    margin-left: auto;
+    font-size: 12.5px;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+
+    .budget-widget,
+    .budget-widget * {
+      visibility: visible;
+    }
+
+    .budget-widget {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: auto;
+      border: none;
+    }
+
+    .buttons {
+      display: none;
+    }
+  }
+</style>
+</head>
+
+<body>
+
+<div class="budget-widget" id="budgetChecklist">
+  <div class="top-label">Бюджет-2027</div>
+
+  <h1>Что проверить перед защитой бюджета</h1>
+
+  <p class="intro">
+    Отметьте проверки, которые уже сделали в бюджетной модели. Прогресс покажет,
+    насколько бюджет готов к защите перед бюджетным комитетом.
+  </p>
+
+  <div class="progress-row">
+    <div class="progress-text" id="progressText">Готово: 0 из 9</div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <div class="checklist">
+    <label class="check-item">
+      <input type="checkbox" value="Курс, ставка, инфляция и спрос заложены в базовом и стрессовом сценариях">
+      <span class="check-text">Курс, ставка, инфляция и спрос заложены в базовом и стрессовом сценариях</span>
+    </label>
+
+    <label class="check-item">
+      <input type="checkbox" value="Импортные закупки и валютные платежи пересчитаны по стресс-курсу">
+      <span class="check-text">Импортные закупки и валютные платежи пересчитаны по стресс-курсу</span>
+    </label>
+
+    <label class="check-item">
+      <input type="checkbox" value="Проценты по кредитам, лизингу и факторингу пересчитаны при росте ставки">
+      <span class="check-text">Проценты по кредитам, лизингу и факторингу пересчитаны при росте ставки</span>
+    </label>
+
+    <label class="check-item">
+      <input type="checkbox" value="ФОТ проверен: индексация, премии, найм и страховые взносы учтены">
+      <span class="check-text">ФОТ проверен: индексация, премии, найм и страховые взносы учтены</span>
+    </label>
+
+    <label class="check-item">
+      <input type="checkbox" value="Инвестпроекты разделены на обязательные и те, которые можно перенести">
+      <span class="check-text">Инвестпроекты разделены на обязательные и те, которые можно перенести</span>
+    </label>
+
+    <label class="check-item">
+      <input type="checkbox" value="Запасы, дебиторка, кредиторка и авансы пересчитаны под новый сценарий">
+      <span class="check-text">Запасы, дебиторка, кредиторка и авансы пересчитаны под новый сценарий</span>
+    </label>
+
+    <label class="check-item">
+      <input type="checkbox" value="Налоги, сборы, пошлины и риск доначислений проверены">
+      <span class="check-text">Налоги, сборы, пошлины и риск доначислений проверены</span>
+    </label>
+
+    <label class="check-item">
+      <input type="checkbox" value="Проверено, хватит ли денег на платежи при кассовом разрыве">
+      <span class="check-text">Проверено, хватит ли денег на платежи при кассовом разрыве</span>
+    </label>
+
+    <label class="check-item">
+      <input type="checkbox" value="Заданы пороги, при которых бюджет нужно пересчитать">
+      <span class="check-text">Заданы пороги, при которых бюджет нужно пересчитать</span>
+    </label>
+  </div>
+
+  <div class="buttons">
+    <button class="download-btn" onclick="downloadChecklist()">
+      Скачать чек-лист для бюджетного комитета
+    </button>
+
+    <button class="print-btn" onclick="window.print()">
+      Распечатать
+    </button>
+
+    <div class="result-note" id="resultNote">Проверьте все 9 пунктов</div>
+  </div>
+</div>
+
+<script>
+  const checkboxes = document.querySelectorAll('.check-item input');
+  const progressFill = document.getElementById('progressFill');
+  const progressText = document.getElementById('progressText');
+  const resultNote = document.getElementById('resultNote');
+
+  function updateProgress() {
+    const total = checkboxes.length;
+    const checked = document.querySelectorAll('.check-item input:checked').length;
+    const percent = Math.round((checked / total) * 100);
+
+    progressFill.style.width = percent + '%';
+    progressText.textContent = 'Готово: ' + checked + ' из ' + total;
+
+    checkboxes.forEach(function(box) {
+      box.closest('.check-item').classList.toggle('checked', box.checked);
+    });
+
+    if (checked === total) {
+      resultNote.textContent = 'Бюджет готов к защите';
+    } else if (checked >= 6) {
+      resultNote.textContent = 'Осталось закрыть слабые места';
+    } else if (checked >= 3) {
+      resultNote.textContent = 'Нужен дополнительный стресс-тест';
+    } else {
+      resultNote.textContent = 'Проверьте все 9 пунктов';
+    }
+  }
+
+  checkboxes.forEach(function(box) {
+    box.addEventListener('change', updateProgress);
+  });
+
+  function downloadChecklist() {
+    const total = checkboxes.length;
+    const checked = document.querySelectorAll('.check-item input:checked').length;
+
+    let text = 'Чек-лист для бюджетного комитета: что проверить перед защитой бюджета-2027\n\n';
+    text += 'Готово: ' + checked + ' из ' + total + '\n\n';
+
+    checkboxes.forEach(function(box) {
+      text += (box.checked ? '✓ ' : '— ') + box.value + '\n';
+    });
+
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const link = document.createElement('a');
+
+    link.href = URL.createObjectURL(blob);
+    link.download = 'checklist_budget_2027.txt';
+    link.click();
+
+    URL.revokeObjectURL(link.href);
+  }
+
+  updateProgress();
+</script>
+
+</body>
+</html>
